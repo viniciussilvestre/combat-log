@@ -2,6 +2,6 @@
     import Login from "./lib/Login.svelte";
 </script>
 
-<body class="flex place-items-center min-h-screen m-0 justify-center bg-background-light dark:bg-background-dark">
+<body class="min-h-screen m-0 grid grid-flow-col bg-background-light dark:bg-background-dark">
     <Login />
 </body>

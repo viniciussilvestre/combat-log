@@ -44,15 +44,20 @@
 </script>
 
 {#if $currentUser}
-    <div class="w-full max-w-xs">
-        <p>Signed in as {$currentUser.username}</p>
-        <button on:click={signOut} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Sign Out</button>
+    <div class="place-self-start w-full grid grid-flow-col">
+        <div class="mt-5 ml-5 text-3xl place-self-start">
+            Combat Log
+        </div>
+        <button on:click={signOut} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-5 mt-5 place-self-end">Sign Out</button>
     </div>
 
 {:else}
     {#if $singUpClicked}
-        <div class="w-full max-w-xs">
-            <form on:submit|preventDefault class="shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <div class="w-full max-w-xs place-self-center">
+            <form on:submit|preventDefault class="rounded shadow-md px-8 pt-6 pb-8 mb-4">
+                <div class="ml-auto mr-auto mb-5 text-3xl text-center">
+                    Combat Log
+                </div>
                 <div class="mb-4">
                     <label class="block text-on-background-light dark:text-on-background-dark text-sm font-bold mb-2" for="Email">
                         Email
@@ -77,7 +82,7 @@
                     </label>
                     <input class="shadow appearance-none border border-red-500 rounded w-full py-2 px-3 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="password" placeholder="******************" bind:value={retypedPassword}>
                 </div>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-center">
                     <button on:click={signUp} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         Create User
                     </button>
@@ -85,8 +90,11 @@
             </form>
         </div>
         {:else}
-            <div class="w-full max-w-xs">
+            <div class="w-full max-w-xs place-self-center">
                 <form on:submit|preventDefault class="shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                    <div class="ml-auto mr-auto mb-5 text-3xl text-center">
+                        Combat Log
+                    </div>
                     <div class="mb-4">
                         <label class="block text-on-background-light dark:text-on-background-dark text-sm font-bold mb-2" for="Email">
                             Email
@@ -109,23 +117,6 @@
                     </div>
                 </form>
             </div>
-            <!-- <form on:submit|preventDefault class="shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <input
-                    placeholder="Email"
-                    type="email"
-                    bind:value={email}
-                />
-
-                <input
-                    placeholder="Password"
-                    type="password"
-                    bind:value={password}
-                />
-
-                <button on:click={login}>Login</button>
-                <button on:click={signUpClicked}>Sign Up</button>
-            </form> -->
-
     {/if}
 
 {/if}
