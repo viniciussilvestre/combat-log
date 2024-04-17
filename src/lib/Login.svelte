@@ -1,12 +1,12 @@
 <script lang="ts">
-    import { currentUser, pb } from "./pocketbase";
-    import { writable } from 'svelte/store';
+    import { pb } from "./pocketbase";
+    import { darkMode } from "./stores";
 
     let email: string;
     let password: string;
     let retypedPassword: string;
     let username: string;
-    let singUpClicked = writable(false);
+    let singUpClicked = false;
 
     async function login() {
         try {
@@ -18,7 +18,7 @@
     }
 
     function signUpClicked() {
-        $singUpClicked = true;
+        singUpClicked = true;
     }
 
     async function signUp() {
@@ -30,10 +30,10 @@
                 username
             };
             const createdUser = await pb.collection('users').create(data);
-            $singUpClicked = false;
+            singUpClicked = false;
         }
         catch (err) {
-
+            
         }
     }
 
@@ -41,21 +41,27 @@
         pb.authStore.clear();
     }
 
+    function toogleDarkMode() {
+        if ($darkMode) {
+            $darkMode = false;
+        }
+        else {
+            $darkMode = true;
+        }
+    }
+
 </script>
 
-{#if $currentUser}
-    <div class="place-self-start w-full grid grid-flow-col">
-        <div class="mt-5 ml-5 text-3xl place-self-start">
-            Combat Log
+{#if singUpClicked}
+    <div class=" w-full h-full grid grid-cols-3 grid-flow-col auto-col-auto">
+        <div class="grid grid-flow-col col-start-3">
+            <div class="place-self-start w-full flex justify-end">
+                <button on:click={toogleDarkMode} class="bg-primary-container-light dark:bg-primary-container-dark text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-5 mt-5">Light/Dark</button>
+            </div>
         </div>
-        <button on:click={signOut} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-5 mt-5 place-self-end">Sign Out</button>
-    </div>
-
-{:else}
-    {#if $singUpClicked}
-        <div class="w-full max-w-xs place-self-center">
-            <form on:submit|preventDefault class="rounded shadow-md px-8 pt-6 pb-8 mb-4">
-                <div class="ml-auto mr-auto mb-5 text-3xl text-center">
+        <div class="max-w-xs place-self-center col-start-2">
+            <form on:submit|preventDefault class="rounded shadow-all px-8 pt-6 pb-8 mb-4">
+                <div class="ml-auto mr-auto mb-5 text-3xl text-center text-on-background-light dark:text-on-background-dark">
                     Combat Log
                 </div>
                 <div class="mb-4">
@@ -83,16 +89,23 @@
                     <input class="shadow appearance-none border border-red-500 rounded w-full py-2 px-3 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="password" placeholder="******************" bind:value={retypedPassword}>
                 </div>
                 <div class="flex items-center justify-center">
-                    <button on:click={signUp} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    <button on:click={signUp} class="bg-primary-container-light dark:bg-primary-container-dark text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         Create User
                     </button>
                 </div>
             </form>
         </div>
-        {:else}
-            <div class="w-full max-w-xs place-self-center">
-                <form on:submit|preventDefault class="shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                    <div class="ml-auto mr-auto mb-5 text-3xl text-center">
+    </div>
+    {:else}
+        <div class="w-full h-full grid grid-rows-3">
+            <div class="place-self-start w-full grid grid-flow-col">
+                <div class="place-self-end">
+                    <button on:click={toogleDarkMode} class="bg-primary-container-light dark:bg-primary-container-dark text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-5 mt-5">Light/Dark</button>
+                </div>
+            </div>
+            <div class="max-w-xs place-self-center">
+                <form on:submit|preventDefault class="rounded shadow-all px-8 pt-6 pb-8 mb-4">
+                    <div class="ml-auto mr-auto mb-5 text-3xl text-center text-on-background-light dark:text-on-background-dark">
                         Combat Log
                     </div>
                     <div class="mb-4">
@@ -107,16 +120,15 @@
                         </label>
                         <input class="shadow appearance-none border border-red-500 rounded w-full py-2 px-3 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="password" placeholder="******************" bind:value={password}>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <button on:click={login} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Login
-                        </button>
-                        <button on:click={signUpClicked} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    <div class="flex items-center justify-evenly">
+                        <button on:click={signUpClicked} class="bg-primary-container-light dark:bg-primary-container-dark text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                             Sign Up
+                        </button>
+                        <button on:click={login} class="bg-primary-container-light dark:bg-primary-container-dark text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Login
                         </button>
                     </div>
                 </form>
             </div>
-    {/if}
-
+        </div>
 {/if}

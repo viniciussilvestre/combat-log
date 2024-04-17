@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
+    darkMode: 'selector',
     theme: {
         screens: {
             sm: '480px',
@@ -178,6 +179,11 @@ export default {
             'surface-tint-dark': '#31e280',
             'outline-variant-dark': '#414941',
             'scrim-dark': '#000000',
+        },
+        extend: {
+            boxShadow: {
+                'all': '5px 5px 20px 0 rgba(0, 0, 0, 0.3)',
+            }
         },
         plugins: [],
     }
