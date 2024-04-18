@@ -1,6 +1,6 @@
 <script lang="ts">
     import { currentUser, pb } from "./pocketbase";
-    import { darkMode } from "./stores";
+    import { darkMode, tableToLoadId } from "./stores";
     import Modal from "./Modal.svelte";
     import { onMount, onDestroy } from "svelte";
 
@@ -15,9 +15,11 @@
     function toogleDarkMode() {
         if ($darkMode) {
             $darkMode = false;
+            document.documentElement.classList.remove('dark');
         }
         else {
             $darkMode = true;
+            document.documentElement.classList.add('dark');
         }
     }
 
@@ -37,6 +39,10 @@
         catch (err) {
             
         }
+    }
+
+    function selectTable(tableId: String) {
+        $tableToLoadId = tableId
     }
 
     onMount(async () => {
@@ -78,14 +84,14 @@
     </div>
     <div class="grid grid-flow-col mt-10">
         {#each tables as table (table.id)}
-            <div class="rounded shadow-all px-8 pt-6 pb-8 mb-4 w-64 h-64 place-self-center grid grid-flow-row auto-rows-auto">
+            <button on:click={() => selectTable(table.id)} class="rounded shadow-all px-8 pt-6 pb-8 mb-4 w-64 h-64 place-self-center grid grid-flow-row auto-rows-auto text-on-background-light dark:text-on-background-dark">
                 <div class="text-lg">{table.name}</div>
                 <img class="place-self-center overflow-clip object-cover w-28 h-28"
                     src={pb.files.getUrl(table, table.tableImg)}
                     alt="avatar"
                 />
                 <div class="text-lg">Gm: {table.gmName}</div>
-            </div>
+            </button>
         {/each}
     </div>
 </div>
