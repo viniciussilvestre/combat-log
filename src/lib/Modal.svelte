@@ -7,19 +7,21 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
-<dialog
+<dialog class="bg-background-light dark:bg-background-dark rounded"
 	bind:this={dialog}
 	on:close={() => (showModal = false)}
 	on:click|self={() => dialog.close()}>
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div on:click|stopPropagation>
+	<div on:click|stopPropagation class="flex justify-between w-80">
 		<slot name="header" />
-		<hr />
-		<slot />
-		<hr />
-		<!-- svelte-ignore a11y-autofocus -->
-		<button autofocus on:click={() => dialog.close()}>close modal</button>
+		<button class="outline-none" on:click={() => dialog.close()}>x</button>
 	</div>
+    <div>
+        <slot name="body"/>
+    </div>
+    <div>
+        <slot name="footer"/>
+    </div>
 </dialog>
 
 <style>
