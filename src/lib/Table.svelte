@@ -1,6 +1,9 @@
-<script>
-    import { pb } from "./pocketbase";
+<script lang="ts">
+    import { onMount } from "svelte";
+    import { currentUser, pb } from "./pocketbase";
     import { darkMode, tableToLoadId } from "./stores";
+
+    let table: import("pocketbase").RecordModel;
 
     function signOut() {
         pb.authStore.clear();
@@ -18,6 +21,10 @@
     function goBack() {
         $tableToLoadId = '';
     }
+
+    onMount(async () => {
+        const result = await pb.collection('tables').getOne($tableToLoadId, {})
+    })
 
 </script>
 
@@ -37,5 +44,7 @@
         </div>
     </div>
 
-    
+    <div>
+
+    </div>
 </div>
