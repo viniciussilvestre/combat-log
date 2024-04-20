@@ -6,6 +6,7 @@
 
     let combatItens: RecordModel[] = [];
     let unsubscribe: () => void;
+    let playerStates = {};
 
     function signOut() {
         pb.authStore.clear();
@@ -64,10 +65,11 @@
                 combatItens = resultList.items;
             }
 
-            unsubscribe = await pb.collection('combat').subscribe('*', async ({ action, record}) => {
+            unsubscribe = await pb.collection('combat').subscribe('*', async ({ action, record }) => {
                 if (action == 'update') {
                     let objIndex: number = combatItens.findIndex(item => item.id == record.id);
                     if (objIndex != -1) {
+                        console.log(record);
                         const user = await pb.collection('users').getOne(record.player);
                         record.expand = { user };
                         combatItens[objIndex] = record;
@@ -119,15 +121,15 @@
                     </div>
                     <div class="flex flex-col">
                         <label class="inline-flex items-center cursor-pointer select-none mb-2">
-                            <input type="checkbox" bind:checked={combat.action} on:click={() => updateCombat(combat.id, combat.action, 'action')} class="sr-only peer">
+                            <input type="checkbox" bind:checked={combat.action} on:change={() => updateCombat(combat.id, combat.action, 'action')} class="sr-only peer">
                             <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
                         </label>
                         <label class="inline-flex items-center cursor-pointer select-none mb-2">
-                            <input type="checkbox" bind:checked={combat.bonusAction} on:click={() => updateCombat(combat.id, combat.bonusAction, 'bonusAction')} class="sr-only peer">
+                            <input type="checkbox" bind:checked={combat.bonusAction} on:change={() => updateCombat(combat.id, combat.bonusAction, 'bonusAction')} class="sr-only peer">
                             <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
                         </label>
                         <label class="inline-flex items-center cursor-pointer select-none mb-2">
-                            <input type="checkbox" bind:checked={combat.movement} on:click={() => updateCombat(combat.id, combat.movement, 'movement')} class="sr-only peer">
+                            <input type="checkbox" bind:checked={combat.movement} on:change={() => updateCombat(combat.id, combat.movement, 'movement')} class="sr-only peer">
                             <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
                         </label>
                     </div>
