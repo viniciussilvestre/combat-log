@@ -6,19 +6,14 @@
 
     let combatItens: RecordModel[] = [];
     let unsubscribe: () => void;
-    let playerStates = {};
+    let tableName: string;
 
     function signOut() {
         pb.authStore.clear();
     }
 
     function toogleDarkMode() {
-        if ($darkMode) {
-            $darkMode = false;
-        }
-        else {
-            $darkMode = true;
-        }
+        $darkMode = !darkMode;
     }
 
     function goBack() {
@@ -46,6 +41,7 @@
     onMount(async () => {
         const result = await pb.collection('tables').getOne($tableToLoadId);
         if ($currentUser != null) {
+            tableName = result.name;
             if ($currentUser.id == result.gmId) {
                 let combatIds = result.combat;
                 let combatIdFilter: string = '';
@@ -57,11 +53,11 @@
                         combatIdFilter = combatIdFilter + 'id="' + combatIds[i] + '"';
                     }
                 }
-                const resultList = await pb.collection('combat').getList(1, 1, {filter: combatIdFilter, expand: 'player'});
+                const resultList = await pb.collection('combat').getList(1, 50, {filter: combatIdFilter});
                 combatItens = resultList.items;
             }
             else {
-                const resultList = await pb.collection('combat').getList(1, 1, {filter: 'player="' + $currentUser.id + '"', expand: 'player'});
+                const resultList = await pb.collection('combat').getList(1, 1, {filter: 'player="' + $currentUser.id + '"'});
                 combatItens = resultList.items;
             }
 
@@ -69,9 +65,7 @@
                 if (action == 'update') {
                     let objIndex: number = combatItens.findIndex(item => item.id == record.id);
                     if (objIndex != -1) {
-                        console.log(record);
-                        const user = await pb.collection('users').getOne(record.player);
-                        record.expand = { user };
+                        const user = await pb.collection('users').getOne(record.user);
                         combatItens[objIndex] = record;
                     }
                 }
@@ -86,36 +80,39 @@
 </script>
 
 <div>
-    <div class="grid grid-cols-3 grid-rows-1 grid-flow-col">
-        <div class="mt-5 ml-5 col-start-1 row-start-1 flex justify-start">
+    <div class="flex flex-wrap">
+        <div class="flex basis-0 grow justify-start mr-5 ml-5 mt-5">
             <div class="text-3xl text-on-background-light dark:text-on-background-dark">
                 Combat Log
             </div>
             <div>
-                <button on:click={goBack} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 max-w-32 max-h-10">Go Back</button>
+                <button on:click={goBack} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 min-w-32 max-w-32 max-h-10">Go Back</button>
             </div>
         </div>
-        <div class="col-start-3 row-start-1 flex justify-end">
-            <button on:click={toogleDarkMode} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline mr-5 mt-5 mb-5 max-w-32 max-h-10">Light/Dark</button>
-            <button on:click={signOut} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline mr-5 mt-5 mb-5 max-w-32 max-h-10">Sign Out</button>
+        <div class="text-3xl basis-0 grow text-on-background-light dark:text-on-background-dark text-center mr-5 ml-5 mt-5">
+            {tableName}
+        </div>
+        <div class="flex basis-0 grow justify-end mr-5 ml-5 mt-5">
+            <button on:click={toogleDarkMode} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline min-w-32 max-w-32 max-h-10">Light/Dark</button>
+            <button on:click={signOut} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 min-w-32 max-w-32 max-h-10">Sign Out</button>
         </div>
     </div>
 
-    <div class="grid grid-flow-col m-10 auto-cols-auto">
+    <div class="flex justify-evenly flex-wrap m-10">
         {#each combatItens as combat (combat.id)}
-            <div class="shadow-all w-64 h-44 rounded-3xl p-4 grid grid-flow-row">
-                <div class="place-self-center text-xl font-semibold">
-                    {combat.expand != null ? combat.expand.player.username : ''}
+            <div class="shadow-all w-64 h-44 rounded-3xl p-4 grid grid-flow-row mr-12 ml-12 mb-12">
+                <div class="place-self-center text-xl font-semibold text-on-background-light dark:text-on-background-dark">
+                    {combat.character}
                 </div>
                 <div class="flex">
                     <div class="grow">
-                        <div class="mb-2">
+                        <div class="mb-2 text-on-background-light dark:text-on-background-dark">
                             Action:
                         </div>
-                        <div class="mb-2">
+                        <div class="mb-2 text-on-background-light dark:text-on-background-dark">
                             Bonus action:
                         </div>
-                        <div class="mb-2">
+                        <div class="mb-2 text-on-background-light dark:text-on-background-dark">
                             Movement:
                         </div>
                     </div>

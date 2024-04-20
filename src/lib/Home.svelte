@@ -7,6 +7,7 @@
 	let showModal: Boolean = false;
     let tableCode: String;
     let tables: any[] = [];
+    let unsubscribe: () => void;
 
     function signOut() {
         pb.authStore.clear();
@@ -49,7 +50,15 @@
         if ($currentUser != null) {
             const tableList = await pb.collection('tables').getList(undefined, undefined, {filter: 'gmId="' + $currentUser.id + '" || players~"' + $currentUser.id + '"'});
             tables = tableList.items;
+
+            unsubscribe = await pb.collection('tables').subscribe('*', async ({ action, record }) => {
+                
+            });
         }
+    });
+
+    onDestroy(() => {
+        unsubscribe?.();
     });
 
 </script>
@@ -68,23 +77,23 @@
 </Modal>
 
 <div>
-    <div class="grid grid-cols-3 grid-rows-1 grid-flow-col">
+    <div class="flex justify-between">
         <div class="mt-5 ml-5 col-start-1 row-start-1 flex justify-start">
             <div class="text-3xl text-on-background-light dark:text-on-background-dark">
                 Combat Log
             </div>
             <div>
-                <button on:click={() => (showModal = true)} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 max-w-32 max-h-10">Join Table</button>
+                <button on:click={() => (showModal = true)} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 min-w-32 max-w-32 max-h-10">Join Table</button>
             </div>
         </div>
         <div class="col-start-3 row-start-1 flex justify-end">
-            <button on:click={toogleDarkMode} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline mr-5 mt-5 mb-5 max-w-32 max-h-10">Light/Dark</button>
-            <button on:click={signOut} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline mr-5 mt-5 mb-5 max-w-32 max-h-10">Sign Out</button>
+            <button on:click={toogleDarkMode} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline mr-5 mt-5 mb-5 min-w-32 max-w-32 max-h-10">Light/Dark</button>
+            <button on:click={signOut} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline mr-5 mt-5 mb-5 min-w-32 max-w-32 max-h-10">Sign Out</button>
         </div>
     </div>
-    <div class="grid grid-flow-col mt-10">
+    <div class="flex justify-evenly flex-wrap m-10">
         {#each tables as table (table.id)}
-            <button on:click={() => selectTable(table.id)} class="rounded-3xl shadow-all px-8 pt-6 pb-8 mb-4 w-64 h-64 place-self-center grid grid-flow-row auto-rows-auto text-on-background-light dark:text-on-background-dark">
+            <button on:click={() => selectTable(table.id)} class="rounded-3xl shadow-all px-8 pt-6 pb-8 mr-12 ml-12 mb-12 w-64 h-64 place-self-center grid grid-flow-row auto-rows-auto text-on-background-light dark:text-on-background-dark">
                 <div class="text-lg">{table.name}</div>
                 <img class="place-self-center overflow-clip object-cover w-28 h-28"
                     src={pb.files.getUrl(table, table.tableImg)}
