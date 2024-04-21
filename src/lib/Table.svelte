@@ -5,13 +5,15 @@
     import type { RecordModel } from "pocketbase";
     import Modal from "./Modal.svelte";
 
+    let selectPlayers: Boolean = true;
     let showModal: Boolean = false;
     let combatItens: RecordModel[] = [];
+    let players: RecordModel[] = [];
+    let playerIdsToAdd: string[] = [];
     let unsubscribe: () => void;
     let tableName: string;
     let gmId: string;
     let userId: string;
-    let playerNumber: number;
     let npcNumber: number;
     let enemiesNumber: number;
 
@@ -40,21 +42,56 @@
 
     async function createCombat() {
         try {
-            const result = await pb.collection('tables').getOne($tableToLoadId);
+            let individualCombatIds: string[] = [];
+            for (let i = 0; i < playerIdsToAdd.length; i++) {
+                const individualCombat = await pb.collection('combat').create({
+                    'user': playerIdsToAdd[i],
+                    'action': true,
+                    'bonusAction': true,
+                    'movement': true,
+                    'character': 'name' + i
+                });
+                individualCombatIds.push(individualCombat.id);
+            }
+            const combatLog = await pb.collection('combatLog').create({
+                'combats': individualCombatIds,
+                'date': new Date()
+            })
+            await pb.collection('tables').update($tableToLoadId, {
+                'combat': combatLog.id
+            });
             
         }
         catch (err) {
-            
+            console.log(err);
         }
     }
 
+    function continueCombatCreation() {
+        selectPlayers = false;
+    }
+
+    function addPlayer(playerId: string) {
+        if (playerIdsToAdd.includes(playerId)) {
+            const index = playerIdsToAdd.indexOf(playerId);
+            playerIdsToAdd.splice(index, 1);
+        }
+        else {
+            playerIdsToAdd.push(playerId);
+        }
+        console.log(playerIdsToAdd);
+    }
+
     onMount(async () => {
-        const result = await pb.collection('tables').getOne($tableToLoadId);
+        const result = await pb.collection('tables').getOne($tableToLoadId, {expand: 'players'});
         if ($currentUser != null) {
             userId = $currentUser.id;
             gmId = result.gmId;
             tableName = result.name;
             let combatIds = result.combat;
+            if (result.expand != null) {
+                players = result.expand.players
+            }
             let combatIdFilter: string = '';
             for (let i = 0; i < combatIds.length; i++) {
                 if (i != (combatIds.length - 1)) {
@@ -92,12 +129,12 @@
         <div class="text-2xl">Create new combat</div>
     </div>
     <div slot="body">
-        <div class="text-base">Enter the number of player</div>
-        <input class="shadow appearance-none border rounded-3xl w-full py-2 px-3 mb-2 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="Number of players" bind:value={playerNumber}>
-        <div class="text-base">Enter the number of npcs</div>
-        <input class="shadow appearance-none border rounded-3xl w-full py-2 px-3 mb-2 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="Number of npcs" bind:value={npcNumber}>
-        <div class="text-base">Enter the number of enemies</div>
-        <input class="shadow appearance-none border rounded-3xl w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="Number of enemies" bind:value={enemiesNumber}>
+        {#each players as player (player.id)}
+            <div class="flex items-center me-4">
+                <input on:change={() => addPlayer(player.id)} type="checkbox" class="w-4 h-4 text-primary-container-light bg-neutral-50 border-neutral-30 rounded focus:ring-primary-container-light dark:focus:ring-primary-container-dark dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600">
+                <div class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{player.username}</div>
+            </div>
+        {/each}
     </div>
     <div slot="footer" class="flex justify-center">
         <button on:click={createCombat} class="bg-primary-container-light dark:bg-primary-container-dark text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline max-w-32 max-h-10">Create</button>
