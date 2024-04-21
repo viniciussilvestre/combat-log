@@ -93,7 +93,7 @@
     </div>
     <div class="flex justify-evenly flex-wrap m-10">
         {#each tables as table (table.id)}
-            <button on:click={() => selectTable(table.id)} class="rounded-3xl shadow-all px-8 pt-6 pb-8 mr-12 ml-12 mb-12 w-64 h-64 place-self-center grid grid-flow-row auto-rows-auto text-on-background-light dark:text-on-background-dark">
+            <button on:click={() => selectTable(table.id)} class="rounded-3xl shadow-all px-8 pt-6 pb-8 mr-16 ml-16 mb-12 w-64 h-64 place-self-center grid grid-flow-row auto-rows-auto text-on-background-light dark:text-on-background-dark">
                 <div class="text-lg">{table.name}</div>
                 <img class="place-self-center overflow-clip object-cover w-28 h-28"
                     src={pb.files.getUrl(table, table.tableImg)}

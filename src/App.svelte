@@ -1,9 +1,10 @@
 <script lang="ts">
     import Login from "./lib/Login.svelte";
-    import { darkMode, tableToLoadId } from "./lib/stores";
+    import { combatLogId, darkMode, tableToLoadId } from "./lib/stores";
     import { currentUser } from "./lib/pocketbase";
     import Home from "./lib/Home.svelte";
     import Table from "./lib/Table.svelte";
+    import Combat from "./lib/Combat.svelte";
 
 </script>
 
@@ -14,7 +15,13 @@
                 {#if $tableToLoadId == ''}
                     <Home />
                     {:else}
-                        <Table />
+                    {#key $combatLogId}
+                        {#if $combatLogId == ''}
+                            <Table />
+                            {:else}
+                            <Combat />
+                        {/if}
+                    {/key}
                 {/if}
             {/key}
             {:else}

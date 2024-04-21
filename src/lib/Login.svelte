@@ -44,9 +44,11 @@
     function toogleDarkMode() {
         if ($darkMode) {
             $darkMode = false;
+            document.documentElement.classList.remove('dark');
         }
         else {
             $darkMode = true;
+            document.documentElement.classList.add('dark');
         }
     }
 
