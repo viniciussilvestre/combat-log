@@ -36,6 +36,7 @@
                     'players': playerIds
 			    });
             }
+            showModal = false;
         }
         catch (err) {
             

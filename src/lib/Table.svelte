@@ -1,21 +1,17 @@
 <script lang="ts">
     import { onDestroy, onMount } from "svelte";
     import { currentUser, pb } from "./pocketbase";
-    import { combatLogId, darkMode, tableToLoadId } from "./stores";
+    import { combatLogId, darkMode, tableToLoadId, gmId } from "./stores";
     import type { RecordModel } from "pocketbase";
     import Modal from "./Modal.svelte";
 
-    let selectPlayers: Boolean = true;
     let showModal: Boolean = false;
     let combatItens: RecordModel[] = [];
     let players: RecordModel[] = [];
     let playerIdsToAdd: string[] = [];
     let unsubscribe: () => void;
     let tableName: string;
-    let gmId: string;
     let userId: string;
-    let npcNumber: number;
-    let enemiesNumber: number;
 
     function signOut() {
         pb.authStore.clear();
@@ -34,6 +30,7 @@
 
     function goBack() {
         $tableToLoadId = '';
+        $gmId = '';
     }
 
     function selectCombat(combatId: string) {
@@ -67,10 +64,6 @@
         }
     }
 
-    function continueCombatCreation() {
-        selectPlayers = false;
-    }
-
     function addPlayer(playerId: string) {
         if (playerIdsToAdd.includes(playerId)) {
             const index = playerIdsToAdd.indexOf(playerId);
@@ -86,7 +79,7 @@
         const result = await pb.collection('tables').getOne($tableToLoadId, {expand: 'players'});
         if ($currentUser != null) {
             userId = $currentUser.id;
-            gmId = result.gmId;
+            $gmId = result.gmId;
             tableName = result.name;
             let combatIds = result.combat;
             if (result.expand != null) {
@@ -150,7 +143,7 @@
             <div>
                 <button on:click={goBack} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 min-w-32 max-w-32 max-h-10">Go Back</button>
             </div>
-            {#if userId == gmId}
+            {#if userId == $gmId}
                 <div>
                     <button on:click={() => (showModal = true)} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 min-w-36 max-w-36 max-h-10">New Combat</button>
                 </div>

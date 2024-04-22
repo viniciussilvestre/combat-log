@@ -1,12 +1,19 @@
 <script lang='ts'>
     import { onDestroy, onMount } from "svelte";
     import { currentUser, pb } from "./pocketbase";
-    import { darkMode, combatLogId } from "./stores";
+    import { darkMode, combatLogId, gmId } from "./stores";
     import type { RecordModel } from "pocketbase";
+    import Modal from "./Modal.svelte";
 
+    let showModal: Boolean = false;
     let combatItens: RecordModel[] = [];
     let unsubscribe: () => void;
     let combatDate: string;
+    let createAction: boolean = true;
+    let createBonusAction: boolean= true;
+    let createMovement: boolean = true;
+    let combatentName: string = '';
+    let userId: string;
 
     function signOut() {
         pb.authStore.clear();
@@ -45,23 +52,29 @@
         }
     }
 
+    async function createCombatent() {
+        const individualCombat = await pb.collection('combat').create({
+            'user': userId,
+            'action': createAction,
+            'bonusAction': createBonusAction,
+            'movement': createMovement,
+            'character': combatentName
+        });
+        const combatLog = await pb.collection('combatLog').getOne($combatLogId);
+        let combatents = combatLog.combats;
+        combatents.push(individualCombat.id);
+        await pb.collection('combatLog').update($combatLogId, {
+            'combats': combatents
+        });
+    }
+
     onMount(async () => {
-        const result = await pb.collection('combatLog').getOne($combatLogId);
+        const result = await pb.collection('combatLog').getOne($combatLogId, {expand: 'combats'});
         if ($currentUser != null) {
-            combatDate = result.date;
-            let combatIds = result.combats;
-            let combatIdFilter: string = '';
-            for (let i = 0; i < combatIds.length; i++) {
-                if (i != (combatIds.length - 1)) {
-                    combatIdFilter = combatIdFilter + 'id="' + combatIds[i] + '" || ';
-                }
-                else {
-                    combatIdFilter = combatIdFilter + 'id="' + combatIds[i] + '"';
-                }
-            }
-            if (combatIdFilter != '') {
-                const resultList = await pb.collection('combatLog').getList(1, 50, {filter: combatIdFilter});
-                combatItens = resultList.items;
+            userId = $currentUser.id;
+            combatDate = result.date.split(' ')[0].replaceAll('-', ' ');
+            if (result.expand != null) {
+                combatItens = result.expand.combats;
             }
 
             unsubscribe = await pb.collection('combat').subscribe('*', async ({ action, record }) => {
@@ -71,6 +84,12 @@
                         const user = await pb.collection('users').getOne(record.user);
                         combatItens[objIndex] = record;
                     }
+                }
+                if (action == 'create') {
+                    combatItens = [...combatItens, record];
+                }
+                if (action == 'delete') {
+                    combatItens = combatItens.filter((combatent) => combatent.id != record.id);
                 }
             });
         }
@@ -82,6 +101,45 @@
 
 </script>
 
+<Modal bind:showModal>
+	<div slot="header" class="text-on-background-light dark:text-on-background-dark">
+        <div class="text-2xl">Create new combatent</div>
+    </div>
+    <div slot="body">
+        <input class="shadow appearance-none border rounded-3xl w-full py-2 px-3 mb-5 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="Character name" bind:value={combatentName}>
+        <div class="flex">
+            <div class="grow">
+                <div class="mb-2 text-on-background-light dark:text-on-background-dark">
+                    Action:
+                </div>
+                <div class="mb-2 text-on-background-light dark:text-on-background-dark">
+                    Bonus action:
+                </div>
+                <div class="mb-2 text-on-background-light dark:text-on-background-dark">
+                    Movement:
+                </div>
+            </div>
+            <div class="flex flex-col">
+                <label class="inline-flex items-center cursor-pointer select-none mb-2">
+                    <input type="checkbox" bind:checked={createAction} class="sr-only peer">
+                    <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
+                </label>
+                <label class="inline-flex items-center cursor-pointer select-none mb-2">
+                    <input type="checkbox" bind:checked={createBonusAction} class="sr-only peer">
+                    <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
+                </label>
+                <label class="inline-flex items-center cursor-pointer select-none mb-2">
+                    <input type="checkbox" bind:checked={createMovement} class="sr-only peer">
+                    <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div slot="footer" class="flex justify-center">
+        <button on:click={createCombatent} class="bg-primary-container-light dark:bg-primary-container-dark text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline max-w-32 max-h-10">Create</button>
+    </div>
+</Modal>
+
 <div>
     <div class="flex flex-wrap">
         <div class="flex basis-0 grow justify-start mr-5 ml-5 mt-5">
@@ -91,6 +149,9 @@
             <div>
                 <button on:click={goBack} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 min-w-32 max-w-32 max-h-10">Go Back</button>
             </div>
+            {#if userId == $gmId}
+                <button on:click={() => (showModal = true)} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 min-w-48 max-w-48 max-h-10">Add combatent</button>
+            {/if}
         </div>
         <div class="text-3xl basis-0 grow text-on-background-light dark:text-on-background-dark text-center mr-5 ml-5 mt-5">
             {combatDate}

@@ -5,3 +5,5 @@ export let darkMode = writable(false)
 export let tableToLoadId = writable('');
 
 export let combatLogId = writable('');
+
+export let gmId = writable('');
