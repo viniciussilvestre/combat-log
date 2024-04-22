@@ -34,7 +34,7 @@
         $combatLogId = '';
     }
 
-    async function updateCombat(combatId: string, value: boolean, label: string) {
+    async function updateCombat(combatId: string, value: boolean, label: string, name: string) {
         if (label == 'action') {
             await pb.collection('combat').update(combatId, {
                 'action': value
@@ -48,6 +48,11 @@
         else if (label == 'movement') {
             await pb.collection('combat').update(combatId, {
                 'movement': value
+            });
+        }
+        else if (label == 'character') {
+            await pb.collection('combat').update(combatId, {
+                'character': name
             });
         }
     }
@@ -66,6 +71,10 @@
         await pb.collection('combatLog').update($combatLogId, {
             'combats': combatents
         });
+    }
+
+    async function deleteCombatent(combatentId: string) {
+        await pb.collection('combat').delete(combatentId);
     }
 
     onMount(async () => {
@@ -164,9 +173,16 @@
 
     <div class="flex justify-evenly flex-wrap m-10">
         {#each combatItens as combat (combat.id)}
-            <div class="shadow-all w-64 h-44 rounded-3xl p-4 grid grid-flow-row mr-12 ml-12 mb-12">
-                <div class="place-self-center text-xl font-semibold text-on-background-light dark:text-on-background-dark">
-                    {combat.character}
+            <div class="shadow-all w-64 h-44 rounded-3xl p-4 flex flex-col mr-12 ml-12 mb-12">
+                <div class="flex justify-between mb-4">
+                    {#if userId == $gmId || userId == combat.user}
+                        <input bind:value={combat.character} on:blur={() => updateCombat(combat.id, false, 'character', combat.character)} class="text-xl font-semibold box-border w-full mr-5 px-3 shadow appearance-none border rounded-3xl text-on-background-light dark:text-on-background-dark" />
+                        <button class="outline-none text-xl" on:click={() => deleteCombatent(combat.id)}>x</button>
+                        {:else}
+                            <div class="text-xl font-semibold text-on-background-light dark:text-on-background-dark">
+                                {combat.character}
+                            </div>
+                    {/if}
                 </div>
                 <div class="flex">
                     <div class="grow">
@@ -181,18 +197,33 @@
                         </div>
                     </div>
                     <div class="flex flex-col">
-                        <label class="inline-flex items-center cursor-pointer select-none mb-2">
-                            <input type="checkbox" bind:checked={combat.action} on:change={() => updateCombat(combat.id, combat.action, 'action')} class="sr-only peer">
-                            <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
-                        </label>
-                        <label class="inline-flex items-center cursor-pointer select-none mb-2">
-                            <input type="checkbox" bind:checked={combat.bonusAction} on:change={() => updateCombat(combat.id, combat.bonusAction, 'bonusAction')} class="sr-only peer">
-                            <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
-                        </label>
-                        <label class="inline-flex items-center cursor-pointer select-none mb-2">
-                            <input type="checkbox" bind:checked={combat.movement} on:change={() => updateCombat(combat.id, combat.movement, 'movement')} class="sr-only peer">
-                            <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
-                        </label>
+                        {#if userId == $gmId || userId == combat.user}
+                            <label class="inline-flex items-center cursor-pointer select-none mb-2">
+                                <input type="checkbox" bind:checked={combat.action} on:change={() => updateCombat(combat.id, combat.action, 'action', '')} class="sr-only peer">
+                                <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer select-none mb-2">
+                                <input type="checkbox" bind:checked={combat.bonusAction} on:change={() => updateCombat(combat.id, combat.bonusAction, 'bonusAction', '')} class="sr-only peer">
+                                <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer select-none mb-2">
+                                <input type="checkbox" bind:checked={combat.movement} on:change={() => updateCombat(combat.id, combat.movement, 'movement', '')} class="sr-only peer">
+                                <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
+                            </label>
+                            {:else}
+                                <label class="inline-flex items-center cursor-pointer select-none mb-2">
+                                    <input disabled type="checkbox" bind:checked={combat.action} on:change={() => updateCombat(combat.id, combat.action, 'action', '')} class="sr-only peer">
+                                    <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer select-none mb-2">
+                                    <input disabled type="checkbox" bind:checked={combat.bonusAction} on:change={() => updateCombat(combat.id, combat.bonusAction, 'bonusAction', '')} class="sr-only peer">
+                                    <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer select-none mb-2">
+                                    <input disabled type="checkbox" bind:checked={combat.movement} on:change={() => updateCombat(combat.id, combat.movement, 'movement', '')} class="sr-only peer">
+                                    <div class="relative w-11 h-6 bg-neutral-60 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-primary-100 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-source"></div>
+                                </label>
+                        {/if}
                     </div>
                 </div>
             </div>

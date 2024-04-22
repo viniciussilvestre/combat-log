@@ -7,6 +7,7 @@
 
     let showModal: Boolean = false;
     let combatItens: RecordModel[] = [];
+    let combatIds: string[] = [];
     let players: RecordModel[] = [];
     let playerIdsToAdd: string[] = [];
     let unsubscribe: () => void;
@@ -53,9 +54,10 @@
             const combatLog = await pb.collection('combatLog').create({
                 'combats': individualCombatIds,
                 'date': new Date()
-            })
+            });
+            combatIds.push(combatLog.id);
             await pb.collection('tables').update($tableToLoadId, {
-                'combat': combatLog.id
+                'combat': combatIds
             });
             
         }
@@ -81,7 +83,7 @@
             userId = $currentUser.id;
             $gmId = result.gmId;
             tableName = result.name;
-            let combatIds = result.combat;
+            combatIds = result.combat;
             if (result.expand != null) {
                 players = result.expand.players
             }
@@ -95,17 +97,23 @@
                 }
             }
             if (combatIdFilter != '') {
-                const resultList = await pb.collection('combatLog').getList(1, 50, {filter: combatIdFilter});
+                const resultList = await pb.collection('combatLog').getList(1, 50, {filter: combatIdFilter, sort: 'created'});
                 combatItens = resultList.items;
             }
 
-            unsubscribe = await pb.collection('combat').subscribe('*', async ({ action, record }) => {
+            unsubscribe = await pb.collection('combatLog').subscribe('*', async ({ action, record }) => {
                 if (action == 'update') {
                     let objIndex: number = combatItens.findIndex(item => item.id == record.id);
                     if (objIndex != -1) {
                         const user = await pb.collection('users').getOne(record.user);
                         combatItens[objIndex] = record;
                     }
+                }
+                if (action == 'create') {
+                    combatItens = [...combatItens, record];
+                }
+                if (action == 'delete') {
+                    combatItens = combatItens.filter((combat) => combat.id != record.id);
                 }
             });
         }
