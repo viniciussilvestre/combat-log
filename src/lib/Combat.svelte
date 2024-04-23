@@ -77,6 +77,16 @@
         await pb.collection('combat').delete(combatentId);
     }
 
+    async function resetTurns() {
+        for (let i = 0; i < combatItens.length; i++) {
+            await pb.collection('combat').update(combatItens[i].id, {
+                'action': true,
+                'bonusAction': true,
+                'movement': true
+            });
+        }
+    }
+
     onMount(async () => {
         const result = await pb.collection('combatLog').getOne($combatLogId, {expand: 'combats'});
         if ($currentUser != null) {
@@ -158,15 +168,14 @@
             <div>
                 <button on:click={goBack} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 min-w-32 max-w-32 max-h-10">Go Back</button>
             </div>
-            {#if userId == $gmId}
-                <button on:click={() => (showModal = true)} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 min-w-48 max-w-48 max-h-10">Add combatent</button>
-            {/if}
+            <button on:click={() => (showModal = true)} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 mb-5 min-w-48 max-w-48 max-h-10">Add combatent</button>
         </div>
         <div class="text-3xl basis-0 grow text-on-background-light dark:text-on-background-dark text-center mr-5 ml-5 mt-5">
             {combatDate}
         </div>
         <div class="flex basis-0 grow justify-end mr-5 ml-5 mt-5">
-            <button on:click={toogleDarkMode} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline min-w-32 max-w-32 max-h-10">Light/Dark</button>
+            <button on:click={resetTurns} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 min-w-32 max-w-32 max-h-10">Reset turns</button>
+            <button on:click={toogleDarkMode} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 min-w-32 max-w-32 max-h-10">Light/Dark</button>
             <button on:click={signOut} class="bg-primary-container-light dark:bg-primary-container-dark hover:bg-blue-700 text-on-background-light dark:text-on-background-dark font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline ml-5 min-w-32 max-w-32 max-h-10">Sign Out</button>
         </div>
     </div>
@@ -176,8 +185,8 @@
             <div class="shadow-all w-64 h-44 rounded-3xl p-4 flex flex-col mr-12 ml-12 mb-12">
                 <div class="flex justify-between mb-4">
                     {#if userId == $gmId || userId == combat.user}
-                        <input bind:value={combat.character} on:blur={() => updateCombat(combat.id, false, 'character', combat.character)} class="text-xl font-semibold box-border w-full mr-5 px-3 shadow appearance-none border rounded-3xl text-on-background-light dark:text-on-background-dark" />
-                        <button class="outline-none text-xl" on:click={() => deleteCombatent(combat.id)}>x</button>
+                        <input bind:value={combat.character} on:blur={() => updateCombat(combat.id, false, 'character', combat.character)} class="text-xl font-semibold box-border w-full mr-5 px-3 shadow appearance-none border rounded-3xl text-on-background-light" />
+                        <button class="outline-none text-xl text-on-background-light dark:text-on-background-dark" on:click={() => deleteCombatent(combat.id)}>x</button>
                         {:else}
                             <div class="text-xl font-semibold text-on-background-light dark:text-on-background-dark">
                                 {combat.character}

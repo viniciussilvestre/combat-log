@@ -53,7 +53,18 @@
             tables = tableList.items;
 
             unsubscribe = await pb.collection('tables').subscribe('*', async ({ action, record }) => {
-                
+                if (action == 'create') {
+                    tables = [...tables, record];
+                }
+                else if (action == 'update') {
+                    let objIndex: number = tables.findIndex(item => item.id == record.id);
+                    if (objIndex != -1) {
+                        tables[objIndex] = record;
+                    }
+                }
+                else if (action == 'delete') {
+                    tables = tables.filter((table) => table.id != record.id);
+                }
             });
         }
     });
